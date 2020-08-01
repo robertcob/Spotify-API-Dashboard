@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+
+    <title>WebApp</title>
+</head>
+<body>
+
+    <a href="http://www.google.com" target="_parent"><button>Click me !</button></a>
+    <main class="container">
+        <div id="login">
+            <h1>First, log in to <span>Spotify</span></h1>
+            <a href="/login" class= "btn btn-primary"> <button>Login to Spotify</button></a>
+        </div>
+
+        <div id="loggedin">
+            <!-- all this is for the general structure, we'll sort and fix this all up later on -->
+            <div id="user-profile">
+            </div>
+            <div id="oauth">
+            </div>
+            <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+        </div>
+            <!-- raw html for when user loggedin in can be in this containter... 
+            We can work on this later -->
+        </div>
+    </main>
+
+    <script id="user-profile-template" type="text/x-handlebars-template">
+        <!-- so here we is where the html for all the returned info goes... 
+        This will be dependant on what we end of returning from the api, so for now leaving it blank to avoid any more confusion..  -->
+
+        <!-- we will be using this javascript library called handlebars (you can see it externally linked in a script tag below)
+        it basically makes formatting html and returned javascript values from functions etc easy -->
+
+        <!-- so for example, lets say we were just returning the name and email of the spotify account -->
+        <!-- we'd have written some html to structure how the data is returned.. like This -->
+
+            <!-- <dl class="dl-horizontal">
+                <dt>Display name</dt><dd class="clearfix">{{display_name}}</dd>
+                <dt>Id</dt><dd>{{id}}</dd>
+            </dl> -->
+
+        <!-- the display name and id that are in "{{}}" are the user account values returned by the api that we requested -->
+        <!-- and so instead of returning these values and contatinating them to the html me simply use something that is similar to string
+        formatting in python -->
+
+        <!-- i know ranting xD, just thought id comment in detail just so you can understand whats going on -->
+
+        <!-- but pretty much all of whats happening above is whats being put in here.. -->
+
+    </script>
+
+    <!-- ignore these, they are just exterior scripts that the guy used, dont need to worry about them, we are just using functions from them -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+    <script>
+        // this large func overall, messes with the URL.., does all the handling of the html with handlebars..
+        // and uses ajax to display the currently needed tabs and that
+        // I imagine we will be editing a large portion of the ajax over time to suit our own html needs..
+        (function() {
+
+
+            // this embedded func obtains the parameters from the url when it get decoded
+            // honestly still pretty spooked by this function 
+            // roughly its somehow decoding the URL and returning the essential auath info (ie access and refresh token..)
+            function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+              q = window.location.hash.substring(1);
+          while ( e = r.exec(q)) {
+             hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+
+        
+        // this gets a string of all the inner html from this id
+        var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+        // shoves in values into bracketd html from earlier...
+            userProfileTemplate = Handlebars.compile(userProfileSource),
+            // ignore this as our strucutre will differ...
+            userProfilePlaceholder = document.getElementById('user-profile');
+
+
+        // exact same idea here..
+        var oauthSource = document.getElementById('oauth-template').innerHTML,
+            oauthTemplate = Handlebars.compile(oauthSource),
+            oauthPlaceholder = document.getElementById('oauth');
+
+        var params = getHashParams();
+
+        //returned values from URL.. 
+        var access_token = params.access_token,
+            refresh_token = params.refresh_token,
+            error = params.error;
+        
+        // some error handling and the ajax, going to stop here until we solidify our structure for the values we are returning..
+        // to avoid further confusion ;)
+
+        // rougly what we will being doing here in pseudocode..
+
+        // if there was some error in the return values (error token from just above)
+                //error alert  of some sort
+        // else
+            //if access token is not null
+                // display the access/ refresh tokens in inner html
+
+                //request api info upon success hide login html and show logged in html
+
+                //otherwise render initial initial screen...
+
+                // also an event listener here for adding  a refrehs token and all that..
+
+
+        })
+
+
+
+
+
+    </script>
+
+
+
+
+
+</body>
+</html>
