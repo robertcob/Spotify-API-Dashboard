@@ -33,7 +33,7 @@ var generateRandomString = function(length) {
   app.use(express.static(__dirname + '/public'))
   // cors is complicated its all  about accessing exterior files u can rea up on it
    .use(cors())
-   // same here, a google serach on this should sort u out
+   // same here, a google search on this should sort u out
    .use(cookieParser());
 
 // our application requests authorization
@@ -60,19 +60,34 @@ var generateRandomString = function(length) {
   //will explain further...
   app.get('/callback', function(req, res) {
 
-  
+  // similar to 
+  // if req.query.code{
+  //   var code = req.query.code
+  // } 
+  // else{
+  //   var code = null
+  //  }
+
     var code = req.query.code || null;
     var state = req.query.state || null;
+    // if req.cookies is not null, get statekey or else set it to null
     var storedState = req.cookies ? req.cookies[stateKey] : null;
   
+    // if state variable wrong
     if (state === null || state !== storedState) {
+      // do an error redirect...
       res.redirect('/#' +
         querystring.stringify({
           error: 'state_mismatch'
         }));
     } else {
+      // deletes cookie
       res.clearCookie(stateKey);
+
+      // these is the details needed for the post request, when we receive the code (found above)
+      // we will use a post request of authOptions to obtain access token
       var authOptions = {
+        // necessary params...
         url: 'https://accounts.spotify.com/api/token',
         form: {
           code: code,
@@ -84,13 +99,14 @@ var generateRandomString = function(length) {
         },
         json: true
       };
-
+      // relevant post request, with code error handling
       request.post(authOptions, function(error, response, body) {
         if (!error && response.statusCode === 200) {
-  
+          // so if we get 200 back we have obtained our tokens!!!
           var access_token = body.access_token,
               refresh_token = body.refresh_token;
   
+          // params for accessing spotify api
           var options = {
             url: 'https://api.spotify.com/v1/me',
             headers: { 'Authorization': 'Bearer ' + access_token },
@@ -103,12 +119,14 @@ var generateRandomString = function(length) {
           });
   
           // we can also pass the token to the browser to make requests from there
+          // used for more complex requests
           res.redirect('/#' +
             querystring.stringify({
               access_token: access_token,
               refresh_token: refresh_token
             }));
         } else {
+          // redirect if token invalid....
           res.redirect('/#' +
             querystring.stringify({
               error: 'invalid_token'
@@ -117,5 +135,34 @@ var generateRandomString = function(length) {
       });
     }
   });
-  
 
+  // obtaining refresh token...
+  app.get('/refresh_token', function(req, res) {
+
+    // requesting access token from refresh token
+    var refresh_token = req.query.refresh_token;
+    var authOptions = {
+      // info for reaccessing access token with refresh token
+      url: 'https://accounts.spotify.com/api/token',
+      headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+      form: {
+        grant_type: 'refresh_token',
+        refresh_token: refresh_token
+      },
+      json: true
+    };
+  
+    // post rquest to reaccess access token..
+    request.post(authOptions, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        var access_token = body.access_token;
+        res.send({
+          'access_token': access_token
+        });
+      }
+    });
+  });
+  
+  console.log('Listening on 8888');
+  app.listen(8888);
+  
